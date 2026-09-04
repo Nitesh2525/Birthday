@@ -1,103 +1,110 @@
 {
-  "name": "fdir",
-  "version": "6.5.0",
-  "description": "The fastest directory crawler & globbing alternative to glob, fast-glob, & tiny-glob. Crawls 1m files in < 1s",
-  "main": "./dist/index.cjs",
-  "types": "./dist/index.d.cts",
-  "type": "module",
-  "scripts": {
-    "prepublishOnly": "npm run test && npm run build",
-    "build": "tsdown",
-    "format": "prettier --write src __tests__ benchmarks",
-    "test": "vitest run __tests__/",
-    "test:coverage": "vitest run --coverage __tests__/",
-    "test:watch": "vitest __tests__/",
-    "bench": "ts-node benchmarks/benchmark.js",
-    "bench:glob": "ts-node benchmarks/glob-benchmark.ts",
-    "bench:fdir": "ts-node benchmarks/fdir-benchmark.ts",
-    "release": "./scripts/release.sh"
+  "name": "lightningcss",
+  "version": "1.33.0",
+  "license": "MPL-2.0",
+  "description": "A CSS parser, transformer, and minifier written in Rust",
+  "main": "node/index.js",
+  "types": "node/index.d.ts",
+  "exports": {
+    "types": "./node/index.d.ts",
+    "import": "./node/index.mjs",
+    "require": "./node/index.js"
   },
-  "engines": {
-    "node": ">=12.0.0"
+  "browserslist": "last 2 versions, not dead",
+  "targets": {
+    "main": false,
+    "types": false
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/parcel"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thecodrr/fdir.git"
+    "url": "https://github.com/parcel-bundler/lightningcss.git"
   },
-  "keywords": [
-    "util",
-    "os",
-    "sys",
-    "fs",
-    "walk",
-    "crawler",
-    "directory",
-    "files",
-    "io",
-    "tiny-glob",
-    "glob",
-    "fast-glob",
-    "speed",
-    "javascript",
-    "nodejs"
+  "engines": {
+    "node": ">= 12.0.0"
+  },
+  "napi": {
+    "name": "lightningcss"
+  },
+  "files": [
+    "node/*.js",
+    "node/*.mjs",
+    "node/*.d.ts",
+    "node/*.flow"
   ],
-  "author": "thecodrr <thecodrr@protonmail.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/thecodrr/fdir/issues"
+  "dependencies": {
+    "detect-libc": "^2.0.3"
   },
-  "homepage": "https://github.com/thecodrr/fdir#readme",
   "devDependencies": {
-    "@types/glob": "^8.1.0",
-    "@types/mock-fs": "^4.13.4",
-    "@types/node": "^20.9.4",
-    "@types/picomatch": "^4.0.0",
-    "@types/tap": "^15.0.11",
-    "@vitest/coverage-v8": "^0.34.6",
-    "all-files-in-tree": "^1.1.2",
-    "benny": "^3.7.1",
-    "csv-to-markdown-table": "^1.3.1",
-    "expect": "^29.7.0",
-    "fast-glob": "^3.3.2",
-    "fdir1": "npm:fdir@1.2.0",
-    "fdir2": "npm:fdir@2.1.0",
-    "fdir3": "npm:fdir@3.4.2",
-    "fdir4": "npm:fdir@4.1.0",
-    "fdir5": "npm:fdir@5.0.0",
-    "fs-readdir-recursive": "^1.1.0",
-    "get-all-files": "^4.1.0",
-    "glob": "^10.3.10",
-    "klaw-sync": "^6.0.0",
-    "mock-fs": "^5.2.0",
-    "picomatch": "^4.0.2",
-    "prettier": "^3.5.3",
-    "recur-readdir": "0.0.1",
-    "recursive-files": "^1.0.2",
-    "recursive-fs": "^2.1.0",
-    "recursive-readdir": "^2.2.3",
-    "rrdir": "^12.1.0",
-    "systeminformation": "^5.21.17",
-    "tiny-glob": "^0.2.9",
-    "ts-node": "^10.9.1",
-    "tsdown": "^0.12.5",
-    "typescript": "^5.3.2",
-    "vitest": "^0.34.6",
-    "walk-sync": "^3.0.0"
+    "@babel/parser": "7.21.4",
+    "@babel/traverse": "7.21.4",
+    "@codemirror/lang-css": "^6.0.1",
+    "@codemirror/lang-javascript": "^6.1.2",
+    "@codemirror/lint": "^6.1.0",
+    "@codemirror/theme-one-dark": "^6.1.0",
+    "@mdn/browser-compat-data": "~8.0.7",
+    "@napi-rs/cli": "^2.14.0",
+    "autoprefixer": "^10.5.4",
+    "caniuse-lite": "^1.0.30001806",
+    "codemirror": "^6.0.1",
+    "cssnano": "^7.0.6",
+    "esbuild": "^0.19.8",
+    "flowgen": "^1.21.0",
+    "jest-diff": "^27.4.2",
+    "json-schema-to-typescript": "^11.0.2",
+    "markdown-it-anchor": "^8.6.6",
+    "markdown-it-prism": "^2.3.0",
+    "markdown-it-table-of-contents": "^0.6.0",
+    "napi-wasm": "^1.0.1",
+    "node-fetch": "^3.1.0",
+    "parcel": "^2.8.2",
+    "patch-package": "^6.5.0",
+    "path-browserify": "^1.0.1",
+    "postcss": "^8.3.11",
+    "posthtml-include": "^1.7.4",
+    "posthtml-markdownit": "^1.3.1",
+    "posthtml-prism": "^1.0.4",
+    "process": "^0.11.10",
+    "puppeteer": "^12.0.1",
+    "recast": "^0.22.0",
+    "sharp": "^0.33.5",
+    "typescript": "^5.7.2",
+    "util": "^0.12.4",
+    "uvu": "^0.5.6"
   },
-  "peerDependencies": {
-    "picomatch": "^3 || ^4"
+  "resolutions": {
+    "lightningcss": "link:."
   },
-  "peerDependenciesMeta": {
-    "picomatch": {
-      "optional": true
-    }
+  "scripts": {
+    "prepare": "patch-package",
+    "build": "node scripts/build.js && node scripts/build-flow.js",
+    "build-release": "node scripts/build.js --release && node scripts/build-flow.js",
+    "prepublishOnly": "node scripts/build-flow.js",
+    "wasm:build": "cargo build --target wasm32-unknown-unknown -p lightningcss_node && wasm-opt target/wasm32-unknown-unknown/debug/lightningcss_node.wasm --asyncify --pass-arg=asyncify-imports@env.await_promise_sync -Oz -o wasm/lightningcss_node.wasm && node scripts/build-wasm.js",
+    "wasm:build-release": "cargo build --target wasm32-unknown-unknown -p lightningcss_node --release && wasm-opt target/wasm32-unknown-unknown/release/lightningcss_node.wasm --asyncify --pass-arg=asyncify-imports@env.await_promise_sync -Oz -o wasm/lightningcss_node.wasm && node scripts/build-wasm.js",
+    "website:start": "parcel 'website/*.html' website/playground/index.html",
+    "website:build": "yarn wasm:build-release && parcel build 'website/*.html' website/playground/index.html",
+    "build-ast": "cargo run --example schema --features jsonschema && node scripts/build-ast.js",
+    "tsc": "tsc -p node/tsconfig.json",
+    "test": "uvu node/test"
   },
-  "module": "./dist/index.mjs",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
-    },
-    "./package.json": "./package.json"
+  "optionalDependencies": {
+    "lightningcss-darwin-x64": "1.33.0",
+    "lightningcss-linux-x64-gnu": "1.33.0",
+    "lightningcss-win32-x64-msvc": "1.33.0",
+    "lightningcss-win32-arm64-msvc": "1.33.0",
+    "lightningcss-darwin-arm64": "1.33.0",
+    "lightningcss-linux-arm64-gnu": "1.33.0",
+    "lightningcss-linux-arm-gnueabihf": "1.33.0",
+    "lightningcss-linux-arm64-musl": "1.33.0",
+    "lightningcss-linux-x64-musl": "1.33.0",
+    "lightningcss-freebsd-x64": "1.33.0",
+    "lightningcss-android-arm64": "1.33.0"
   }
 }

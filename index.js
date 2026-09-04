@@ -1,2 +1,59 @@
-import { $ as mergeConfig, A as createServer, B as ssrTransform, C as fetchModule, D as optimizeDeps, E as createBuilder, F as createIdResolver, G as resolveEnvPrefix, H as createServerModuleRunnerTransport, I as perEnvironmentState, J as createLogger, K as transformWithOxc, L as isFileLoadingAllowed, M as formatPostcssSourceMap, N as preprocessCSS, P as searchForWorkspaceRoot, Q as mergeAlias, R as isFileServingAllowed, S as DevEnvironment, T as build, U as buildErrorMessage, V as createServerModuleRunner, W as loadEnv, X as createFilter, Y as perEnvironmentPlugin, Z as isCSSRequest, _ as runnerImport, a as minifySync, at as DEFAULT_CLIENT_MAIN_FIELDS, b as createRunnableDevEnvironment, c as parseAstAsync, ct as DEFAULT_SERVER_MAIN_FIELDS, d as isFetchableDevEnvironment, et as normalizePath, g as sortUserPlugins, h as resolveConfig, i as minify, it as DEFAULT_CLIENT_CONDITIONS, k as createServerHotChannel, l as parseSync, lt as VERSION, m as loadConfigFromFile, n as esbuildVersion, nt as rollupVersion, o as parse, ot as DEFAULT_EXTERNAL_CONDITIONS, p as defineConfig, q as transformWithEsbuild, r as esmExternalRequirePlugin, rt as withFilter, s as parseAst, st as DEFAULT_SERVER_CONDITIONS, t as Visitor, tt as rolldownVersion, u as createFetchableDevEnvironment, ut as defaultAllowedOrigins, v as preview, w as BuildEnvironment, x as isRunnableDevEnvironment, z as send } from "./chunks/node.js";
-export { BuildEnvironment, DevEnvironment, Visitor, build, buildErrorMessage, createBuilder, createFetchableDevEnvironment, createFilter, createIdResolver, createLogger, createRunnableDevEnvironment, createServer, createServerHotChannel, createServerModuleRunner, createServerModuleRunnerTransport, defaultAllowedOrigins, DEFAULT_CLIENT_CONDITIONS as defaultClientConditions, DEFAULT_CLIENT_MAIN_FIELDS as defaultClientMainFields, DEFAULT_EXTERNAL_CONDITIONS as defaultExternalConditions, DEFAULT_SERVER_CONDITIONS as defaultServerConditions, DEFAULT_SERVER_MAIN_FIELDS as defaultServerMainFields, defineConfig, esbuildVersion, esmExternalRequirePlugin, fetchModule, formatPostcssSourceMap, isCSSRequest, isFetchableDevEnvironment, isFileLoadingAllowed, isFileServingAllowed, isRunnableDevEnvironment, loadConfigFromFile, loadEnv, mergeAlias, mergeConfig, minify, minifySync, ssrTransform as moduleRunnerTransform, normalizePath, optimizeDeps, parse, parseAst, parseAstAsync, parseSync, perEnvironmentPlugin, perEnvironmentState, preprocessCSS, preview, resolveConfig, resolveEnvPrefix, rolldownVersion, rollupVersion, runnerImport, searchForWorkspaceRoot, send, sortUserPlugins, transformWithEsbuild, transformWithOxc, VERSION as version, withFilter };
+let parts = [process.platform, process.arch];
+if (process.platform === 'linux') {
+  const { MUSL, familySync } = require('detect-libc');
+  const family = familySync();
+  if (family === MUSL) {
+    parts.push('musl');
+  } else if (process.arch === 'arm') {
+    parts.push('gnueabihf');
+  } else {
+    parts.push('gnu');
+  }
+} else if (process.platform === 'win32') {
+  parts.push('msvc');
+}
+
+let native;
+try {
+  native = require(`lightningcss-${parts.join('-')}`);
+} catch (err) {
+  native = require(`../lightningcss.${parts.join('-')}.node`);
+}
+
+module.exports.transform = wrap(native.transform);
+module.exports.transformStyleAttribute = wrap(native.transformStyleAttribute);
+module.exports.bundle = wrap(native.bundle);
+module.exports.bundleAsync = wrap(native.bundleAsync);
+module.exports.browserslistToTargets = require('./browserslistToTargets');
+module.exports.composeVisitors = require('./composeVisitors');
+module.exports.Features = require('./flags').Features;
+
+function wrap(call) {
+  return (options) => {
+    if (typeof options.visitor === 'function') {
+      let deps = [];
+      options.visitor = options.visitor({
+        addDependency(dep) {
+          deps.push(dep);
+        }
+      });
+
+      let result = call(options);
+      if (result instanceof Promise) {
+        result = result.then(res => {
+          if (deps.length) {
+            res.dependencies ??= [];
+            res.dependencies.push(...deps);
+          }
+          return res;
+        });
+      } else if (deps.length) {
+        result.dependencies ??= [];
+        result.dependencies.push(...deps);
+      }
+      return result;
+    } else {
+      return call(options);
+    }
+  };
+}

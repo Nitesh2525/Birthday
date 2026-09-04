@@ -1,91 +1,105 @@
-<p align="center">
-<img src="https://github.com/thecodrr/fdir/raw/master/assets/fdir.gif" width="75%"/>
+# ⚡️ Lightning CSS
 
-<h1 align="center">The Fastest Directory Crawler & Globber for NodeJS</h1>
-<p align="center">
-  <a href="https://www.npmjs.com/package/fdir"><img src="https://img.shields.io/npm/v/fdir?style=for-the-badge"/></a>
-  <a href="https://www.npmjs.com/package/fdir"><img src="https://img.shields.io/npm/dw/fdir?style=for-the-badge"/></a>
-  <a href="https://codeclimate.com/github/thecodrr/fdir/maintainability"><img src="https://img.shields.io/codeclimate/maintainability-percentage/thecodrr/fdir?style=for-the-badge"/></a>
-  <a href="https://coveralls.io/github/thecodrr/fdir?branch=master"><img src="https://img.shields.io/coveralls/github/thecodrr/fdir?style=for-the-badge"/></a>
-  <a href="https://www.npmjs.com/package/fdir"><img src="https://img.shields.io/bundlephobia/minzip/fdir?style=for-the-badge"/></a>
-  <a href="https://www.producthunt.com/posts/fdir-every-millisecond-matters"><img src="https://img.shields.io/badge/ProductHunt-Upvote-red?style=for-the-badge&logo=product-hunt"/></a>
-  <a href="https://dev.to/thecodrr/how-i-wrote-the-fastest-directory-crawler-ever-3p9c"><img src="https://img.shields.io/badge/dev.to-Read%20Blog-black?style=for-the-badge&logo=dev.to"/></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/github/license/thecodrr/fdir?style=for-the-badge"/></a>
-</p>
-</p>
+An extremely fast CSS parser, transformer, and minifier written in Rust. Use it with [Parcel](https://parceljs.org), as a standalone library or CLI, or via a plugin with any other tool.
 
-⚡ **The Fastest:** Nothing similar (in the NodeJS world) beats `fdir` in speed. It can easily crawl a directory containing **1 million files in < 1 second.**
+<img width="680" alt="performance and build size charts" src="https://user-images.githubusercontent.com/19409/189022599-28246659-f94a-46a4-9de0-b6d17adb0e22.png#gh-light-mode-only">
+<img width="680" alt="performance and build size charts" src="https://user-images.githubusercontent.com/19409/189022693-6956b044-422b-4f56-9628-d59c6f791095.png#gh-dark-mode-only">
 
-💡 **Stupidly Easy:** `fdir` uses expressive Builder pattern to build the crawler increasing code readability.
+## Features
 
-🤖 **Zero Dependencies\*:** `fdir` only uses NodeJS `fs` & `path` modules.
+- **Extremely fast** – Parsing and minifying large files is completed in milliseconds, often with significantly smaller output than other tools. See [benchmarks](#benchmarks) below.
+- **Typed property values** – many other CSS parsers treat property values as an untyped series of tokens. This means that each transformer that wants to do something with these values must interpret them itself, leading to duplicate work and inconsistencies. Lightning CSS parses all values using the grammar from the CSS specification, and exposes a specific value type for each property.
+- **Browser-grade parser** – Lightning CSS is built on the [cssparser](https://github.com/servo/rust-cssparser) and [selectors](https://github.com/servo/stylo/tree/main/selectors) crates created by Mozilla and used by Firefox and Servo. These provide a solid general purpose CSS-parsing foundation on top of which Lightning CSS implements support for all specific CSS rules and properties.
+- **Minification** – One of the main purposes of Lightning CSS is to minify CSS to make it smaller. This includes many optimizations including:
+  - Combining longhand properties into shorthands where possible.
+  - Merging adjacent rules with the same selectors or declarations when it is safe to do so.
+  - Combining CSS transforms into a single matrix or vice versa when smaller.
+  - Removing vendor prefixes that are not needed, based on the provided browser targets.
+  - Reducing `calc()` expressions where possible.
+  - Converting colors to shorter hex notation where possible.
+  - Minifying gradients.
+  - Minifying CSS grid templates.
+  - Normalizing property value order.
+  - Removing default property sub-values which will be inferred by browsers.
+  - Many micro-optimizations, e.g. converting to shorter units, removing unnecessary quotation marks, etc.
+- **Vendor prefixing** – Lightning CSS accepts a list of browser targets, and automatically adds (and removes) vendor prefixes.
+- **Browserslist configuration** – Lightning CSS supports opt-in browserslist configuration discovery to resolve browser targets and integrate with your existing tools and config setup.
+- **Syntax lowering** – Lightning CSS parses modern CSS syntax, and generates more compatible output where needed, based on browser targets.
+  - CSS Nesting
+  - Custom media queries (draft spec)
+  - Logical properties
+  * [Color Level 5](https://drafts.csswg.org/css-color-5/)
+    - `color-mix()` function
+    - Relative color syntax, e.g. `lab(from purple calc(l * .8) a b)`
+  - [Color Level 4](https://drafts.csswg.org/css-color-4/)
+    - `lab()`, `lch()`, `oklab()`, and `oklch()` colors
+    - `color()` function supporting predefined color spaces such as `display-p3` and `xyz`
+    - Space separated components in `rgb` and `hsl` functions
+    - Hex with alpha syntax
+    - `hwb()` color syntax
+    - Percent syntax for opacity
+    - `#rgba` and `#rrggbbaa` hex colors
+  - Selectors
+    - `:not` with multiple arguments
+    - `:lang` with multiple arguments
+    - `:dir`
+    - `:is`
+  - Double position gradient stops (e.g. `red 40% 80%`)
+  - `clamp()`, `round()`, `rem()`, and `mod()` math functions
+  - Alignment shorthands (e.g. `place-items`)
+  - Two-value `overflow` shorthand
+  - Media query range syntax (e.g. `@media (width <= 100px)` or `@media (100px < width < 500px)`)
+  - Multi-value `display` property (e.g. `inline flex`)
+  - `system-ui` font family fallbacks
+- **CSS modules** – Lightning CSS supports compiling a subset of [CSS modules](https://github.com/css-modules/css-modules) features.
+  - Locally scoped class and id selectors
+  - Locally scoped custom identifiers, e.g. `@keyframes` names, grid lines/areas, `@counter-style` names, etc.
+  - Opt-in support for locally scoped CSS variables and other dashed identifiers.
+  - `:local()` and `:global()` selectors
+  - The `composes` property
+- **Custom transforms** – The Lightning CSS visitor API can be used to implement custom transform plugins.
 
-🕺 **Astonishingly Small:** < 2KB in size gzipped & minified.
+## Documentation
 
-🖮 **Hackable:** Extending `fdir` is extremely simple now that the new Builder API is here. Feel free to experiment around.
+Lightning CSS can be used from [Parcel](https://parceljs.org), as a standalone library from JavaScript or Rust, using a standalone CLI, or wrapped as a plugin within any other tool. See the [Lightning CSS website](https://lightningcss.dev/docs.html) for documentation.
 
-_\* `picomatch` must be installed manually by the user to support globbing._
+## Benchmarks
 
-## 🚄 Quickstart
+<img width="680" alt="performance and build size charts" src="https://user-images.githubusercontent.com/19409/189022599-28246659-f94a-46a4-9de0-b6d17adb0e22.png#gh-light-mode-only">
+<img width="680" alt="performance and build size charts" src="https://user-images.githubusercontent.com/19409/189022693-6956b044-422b-4f56-9628-d59c6f791095.png#gh-dark-mode-only">
 
-### Installation
+```
+$ node bench.js bootstrap-4.css
+cssnano: 544.809ms
+159636 bytes
 
-You can install using `npm`:
+esbuild: 17.199ms
+160332 bytes
 
-```sh
-$ npm i fdir
+lightningcss: 4.16ms
+143091 bytes
+
+
+$ node bench.js animate.css
+cssnano: 283.105ms
+71723 bytes
+
+esbuild: 11.858ms
+72183 bytes
+
+lightningcss: 1.973ms
+23666 bytes
+
+
+$ node bench.js tailwind.css
+cssnano: 2.198s
+1925626 bytes
+
+esbuild: 107.668ms
+1961642 bytes
+
+lightningcss: 43.368ms
+1824130 bytes
 ```
 
-or Yarn:
-
-```sh
-$ yarn add fdir
-```
-
-### Usage
-
-```ts
-import { fdir } from "fdir";
-
-// create the builder
-const api = new fdir().withFullPaths().crawl("path/to/dir");
-
-// get all files in a directory synchronously
-const files = api.sync();
-
-// or asynchronously
-api.withPromise().then((files) => {
-  // do something with the result here.
-});
-```
-
-## Documentation:
-
-Documentation for all methods is available [here](/documentation.md).
-
-## 📊 Benchmarks:
-
-Please check the benchmark against the latest version [here](/BENCHMARKS.md).
-
-## 🙏Used by:
-
-`fdir` is downloaded over 200k+ times a week by projects around the world. Here's a list of some notable projects using `fdir` in production:
-
-> Note: if you think your project should be here, feel free to open an issue. Notable is anything with a considerable amount of GitHub stars.
-
-1. [rollup/plugins](https://github.com/rollup/plugins)
-2. [SuperchupuDev/tinyglobby](https://github.com/SuperchupuDev/tinyglobby)
-3. [pulumi/pulumi](https://github.com/pulumi/pulumi)
-4. [dotenvx/dotenvx](https://github.com/dotenvx/dotenvx)
-5. [mdn/yari](https://github.com/mdn/yari)
-6. [streetwriters/notesnook](https://github.com/streetwriters/notesnook)
-7. [imba/imba](https://github.com/imba/imba)
-8. [moroshko/react-scanner](https://github.com/moroshko/react-scanner)
-9. [netlify/build](https://github.com/netlify/build)
-10. [yassinedoghri/astro-i18next](https://github.com/yassinedoghri/astro-i18next)
-11. [selfrefactor/rambda](https://github.com/selfrefactor/rambda)
-12. [whyboris/Video-Hub-App](https://github.com/whyboris/Video-Hub-App)
-
-## 🦮 LICENSE
-
-Copyright &copy; 2024 Abdullah Atta under MIT. [Read full text here.](https://github.com/thecodrr/fdir/raw/master/LICENSE)
+For more benchmarks comparing more tools and input, see [here](http://goalsmashers.github.io/css-minification-benchmark/). Note that some of the tools shown perform unsafe optimizations that may change the behavior of the original CSS in favor of smaller file size. Lightning CSS does not do this – the output CSS should always behave identically to the input. Keep this in mind when comparing file sizes between tools.
