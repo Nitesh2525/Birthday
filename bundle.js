@@ -4,6 +4,8 @@
     constructor(canvas) {
       this.canvas = canvas;
       this.ctx = canvas.getContext("2d");
+      this.width = canvas.logicalWidth || canvas.width;
+      this.height = canvas.logicalHeight || canvas.height;
       this.petals = [];
       this.sparkles = [];
       this.hitParticles = [];
@@ -11,13 +13,19 @@
       this.giftBurstParticles = [];
       this.treeHearts = [];
     }
+    resize(width, height) {
+      this.width = width;
+      this.height = height;
+      this.initPetals(35);
+      this.initSparkles(45);
+    }
     // Scene 1: Initialize Floating Flower Petals
     initPetals(count = 35) {
       this.petals = [];
       for (let i = 0; i < count; i++) {
         this.petals.push({
-          x: Math.random() * this.canvas.width,
-          y: Math.random() * this.canvas.height,
+          x: Math.random() * this.width,
+          y: Math.random() * this.height,
           size: Math.random() * 8 + 6,
           speedY: Math.random() * 0.8 + 0.4,
           speedX: Math.random() * 0.5 - 0.25,
@@ -35,8 +43,8 @@
       this.sparkles = [];
       for (let i = 0; i < count; i++) {
         this.sparkles.push({
-          x: Math.random() * this.canvas.width,
-          y: Math.random() * this.canvas.height,
+          x: Math.random() * this.width,
+          y: Math.random() * this.height,
           size: Math.random() * 3 + 1,
           alpha: Math.random(),
           pulseSpeed: Math.random() * 0.04 + 0.01,
@@ -44,10 +52,10 @@
         });
       }
     }
-    updateAndRenderBackground(deltaTime) {
+    updateAndRenderBackground() {
       const ctx = this.ctx;
-      const width = this.canvas.width;
-      const height = this.canvas.height;
+      const width = this.width;
+      const height = this.height;
       for (let s of this.sparkles) {
         s.alpha += s.pulseSpeed;
         if (s.alpha > 1 || s.alpha < 0) s.pulseSpeed = -s.pulseSpeed;
@@ -204,7 +212,7 @@
     // Scene 4: Initialize Heart Tree Particles assembling into Canopy
     initHeartTreeCanopy(centerX, centerY, count = 450) {
       this.treeHearts = [];
-      const canopyScale = Math.min(this.canvas.width, this.canvas.height) * 0.022;
+      const canopyScale = Math.min(this.width, this.height) * 0.022;
       for (let i = 0; i < count; i++) {
         const t = Math.random() * Math.PI * 2;
         let hx = 16 * Math.pow(Math.sin(t), 3);
@@ -213,9 +221,9 @@
         hx *= rRatio;
         hy *= rRatio;
         const targetX = centerX + hx * canopyScale;
-        const targetY = centerY + hy * canopyScale - 60;
+        const targetY = centerY + hy * canopyScale - canopyScale * 2.5;
         const startAngle = Math.random() * Math.PI * 2;
-        const startDist = Math.max(this.canvas.width, this.canvas.height) * (0.8 + Math.random() * 0.6);
+        const startDist = Math.max(this.width, this.height) * (0.8 + Math.random() * 0.6);
         const startX = centerX + Math.cos(startAngle) * startDist;
         const startY = centerY + Math.sin(startAngle) * startDist;
         this.treeHearts.push({
@@ -225,12 +233,11 @@
           currentY: startY,
           targetX,
           targetY,
-          size: Math.random() * 10 + 6,
+          size: Math.random() * 8 + 5,
           color: ["#ff5e8e", "#ff85ad", "#ffa07a", "#ffd700", "#e0386b", "#ffb7c5"][Math.floor(Math.random() * 6)],
           progress: 0,
           speed: Math.random() * 0.015 + 8e-3,
           delay: Math.random() * 1.5,
-          // Staggered flight entry
           wobblePhase: Math.random() * Math.PI * 2,
           rotation: Math.random() * Math.PI * 2
         });
@@ -502,30 +509,34 @@
       this.ctx = canvas.getContext("2d");
       this.particles = particleSystem;
       this.onComplete = onComplete;
-      this.heartX = canvas.width / 2;
-      this.heartY = canvas.height * 0.38;
-      this.heartRadius = 65;
-      this.heartPulse = 0;
-      this.bowX = Math.max(100, canvas.width * 0.15);
-      this.bowY = canvas.height - 150;
-      this.bowRadius = 75;
       this.isDragging = false;
-      this.dragX = this.bowX;
-      this.dragY = this.bowY;
       this.pullDistance = 0;
-      this.maxPull = 120;
       this.arrow = null;
       this.isCompleted = false;
+      this.heartPulse = 0;
+      const width = canvas.logicalWidth || canvas.width;
+      const height = canvas.logicalHeight || canvas.height;
+      this.resize(width, height);
       this.boundPointerDown = this.handlePointerDown.bind(this);
       this.boundPointerMove = this.handlePointerMove.bind(this);
       this.boundPointerUp = this.handlePointerUp.bind(this);
       this.attachEvents();
     }
     resize(width, height) {
+      const isPortraitMobile = width < 600 || width < height * 0.85;
+      this.isPortraitMobile = isPortraitMobile;
       this.heartX = width / 2;
-      this.heartY = height * 0.38;
-      this.bowX = Math.max(100, width * 0.15);
-      this.bowY = height - 150;
+      this.heartY = isPortraitMobile ? height * 0.4 : height * 0.38;
+      this.heartRadius = Math.max(48, Math.min(75, Math.min(width, height) * 0.11));
+      this.bowRadius = Math.max(48, Math.min(70, Math.min(width, height) * 0.11));
+      this.maxPull = this.bowRadius * 1.4;
+      if (isPortraitMobile) {
+        this.bowX = width / 2;
+        this.bowY = height * 0.68;
+      } else {
+        this.bowX = Math.max(120, width * 0.18);
+        this.bowY = height - Math.max(140, height * 0.22);
+      }
       if (!this.isDragging && (!this.arrow || !this.arrow.active)) {
         this.dragX = this.bowX;
         this.dragY = this.bowY;
@@ -547,12 +558,14 @@
       const px = e.clientX - rect.left;
       const py = e.clientY - rect.top;
       const distToBow = Math.hypot(px - this.bowX, py - this.bowY);
-      if (distToBow < 100) {
+      if (distToBow < Math.max(90, this.bowRadius * 1.4)) {
         this.isDragging = true;
         this.dragX = px;
         this.dragY = py;
         audioManager.resumeContext();
         audioManager.startBackgroundMusic();
+        const pill = document.getElementById("bowInstruction");
+        if (pill) pill.classList.add("hidden");
       }
     }
     handlePointerMove(e) {
@@ -574,6 +587,8 @@
     handlePointerUp(e) {
       if (!this.isDragging) return;
       this.isDragging = false;
+      const pill = document.getElementById("bowInstruction");
+      if (pill && !this.isCompleted) pill.classList.remove("hidden");
       const dx = this.bowX - this.dragX;
       const dy = this.bowY - this.dragY;
       const speedRatio = this.pullDistance / this.maxPull;
@@ -599,16 +614,17 @@
       const ctx = this.ctx;
       this.heartPulse += 0.04;
       ctx.save();
-      const pulseScale = 1 + Math.sin(this.heartPulse) * 0.04;
+      const pulseScale = (1 + Math.sin(this.heartPulse) * 0.04) * (this.heartRadius / 65);
       ctx.translate(this.heartX, this.heartY);
       ctx.scale(pulseScale, pulseScale);
-      const glowGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, 120);
-      glowGrad.addColorStop(0, "rgba(255, 133, 173, 0.6)");
-      glowGrad.addColorStop(0.6, "rgba(255, 94, 142, 0.2)");
+      const auraRadius = this.isPortraitMobile ? 75 : 110;
+      const glowGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, auraRadius);
+      glowGrad.addColorStop(0, "rgba(255, 133, 173, 0.55)");
+      glowGrad.addColorStop(0.6, "rgba(255, 94, 142, 0.18)");
       glowGrad.addColorStop(1, "rgba(255, 94, 142, 0)");
       ctx.fillStyle = glowGrad;
       ctx.beginPath();
-      ctx.arc(0, 0, 120, 0, Math.PI * 2);
+      ctx.arc(0, 0, auraRadius, 0, Math.PI * 2);
       ctx.fill();
       const heartGrad = ctx.createLinearGradient(-40, -40, 40, 40);
       heartGrad.addColorStop(0, "#ff85ad");
@@ -641,7 +657,7 @@
       bowGrad.addColorStop(0.5, "#8b5a2b");
       bowGrad.addColorStop(1, "#5c3a21");
       ctx.strokeStyle = bowGrad;
-      ctx.lineWidth = 10;
+      ctx.lineWidth = Math.max(6, this.bowRadius * 0.13);
       ctx.lineCap = "round";
       const flexOffset = this.isDragging ? this.pullDistance / this.maxPull * 15 : 0;
       ctx.beginPath();
@@ -651,8 +667,8 @@
       const tipTopX = Math.cos(-Math.PI * 0.4) * (this.bowRadius - flexOffset);
       const tipTopY = Math.sin(-Math.PI * 0.4) * (this.bowRadius - flexOffset);
       ctx.beginPath();
-      ctx.arc(tipTopX, tipTopY, 6, 0, Math.PI * 2);
-      ctx.arc(tipTopX, -tipTopY, 6, 0, Math.PI * 2);
+      ctx.arc(tipTopX, tipTopY, 5, 0, Math.PI * 2);
+      ctx.arc(tipTopX, -tipTopY, 5, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 2;
@@ -666,7 +682,7 @@
       ctx.lineTo(tipTopX, -tipTopY);
       ctx.stroke();
       if (!this.arrow || !this.arrow.active) {
-        this.drawArrowShape(ctx, nockX, nockY, 0, 70);
+        this.drawArrowShape(ctx, nockX, nockY, 0, this.bowRadius * 0.95);
       }
       ctx.restore();
     }
@@ -706,19 +722,23 @@
         arr.hit = true;
         arr.active = false;
         this.isCompleted = true;
+        const pill = document.getElementById("bowInstruction");
+        if (pill) pill.classList.add("hidden");
         this.particles.triggerHeartHitExplosion(this.heartX, this.heartY);
         audioManager.playHeartHit();
         setTimeout(() => {
           if (this.onComplete) this.onComplete();
         }, 1200);
       }
-      if (arr.x > this.canvas.width + 100 || arr.y > this.canvas.height + 100 || arr.x < -100) {
+      const boundW = this.canvas.logicalWidth || this.canvas.width;
+      const boundH = this.canvas.logicalHeight || this.canvas.height;
+      if (arr.x > boundW + 100 || arr.y > boundH + 100 || arr.x < -100) {
         arr.active = false;
       }
       ctx.save();
       ctx.translate(arr.x, arr.y);
       ctx.rotate(arr.rotation);
-      this.drawArrowShape(ctx, 0, 0, 0, 70);
+      this.drawArrowShape(ctx, 0, 0, 0, this.bowRadius * 0.95);
       ctx.restore();
     }
     drawArrowShape(ctx, x, y, rotation, length) {
@@ -846,22 +866,29 @@
       this.ctx = canvas.getContext("2d");
       this.particles = particleSystem;
       this.onComplete = onComplete;
-      this.cakeX = canvas.width / 2;
-      this.cakeY = canvas.height * 0.62;
-      this.cakeWidth = Math.min(canvas.width * 0.6, 340);
       this.candles = [];
       this.candlesLitCount = 5;
       this.flameFlickerPhase = 0;
       this.isCompleted = false;
+      const width = canvas.logicalWidth || canvas.width;
+      const height = canvas.logicalHeight || canvas.height;
+      this.resize(width, height);
       this.initCandles();
       this.setupMicrophone();
       this.setupFallbackUI();
     }
     resize(width, height) {
+      const isSmallPhone = width < 480;
+      const isLandscapeShort = height < 550;
       this.cakeX = width / 2;
-      this.cakeY = height * 0.62;
-      this.cakeWidth = Math.min(width * 0.6, 340);
-      this.repositionCandles();
+      this.cakeY = isLandscapeShort ? height * 0.68 : isSmallPhone ? height * 0.58 : height * 0.6;
+      this.cakeWidth = Math.min(width * 0.8, 340);
+      this.cakeWidth = Math.max(220, this.cakeWidth);
+      this.candleHeight = Math.max(45, Math.min(60, height * 0.08));
+      this.candleWidth = Math.max(12, Math.min(16, width * 0.035));
+      if (this.candles && this.candles.length > 0) {
+        this.repositionCandles();
+      }
     }
     initCandles() {
       this.candles = [];
@@ -871,9 +898,9 @@
         this.candles.push({
           id: i,
           x: startX + i * candleSpacing,
-          y: this.cakeY - 95,
-          height: 60,
-          width: 14,
+          y: this.cakeY,
+          height: this.candleHeight || 55,
+          width: this.candleWidth || 14,
           isLit: true,
           flickerOffset: Math.random() * Math.PI * 2,
           smokeTriggered: false
@@ -885,8 +912,12 @@
       const candleSpacing = this.cakeWidth / 6;
       const startX = this.cakeX - this.cakeWidth / 2 + candleSpacing;
       for (let i = 0; i < 5; i++) {
-        this.candles[i].x = startX + i * candleSpacing;
-        this.candles[i].y = this.cakeY - 95;
+        if (this.candles[i]) {
+          this.candles[i].x = startX + i * candleSpacing;
+          this.candles[i].y = this.cakeY;
+          this.candles[i].height = this.candleHeight || 55;
+          this.candles[i].width = this.candleWidth || 14;
+        }
       }
     }
     setupMicrophone() {
@@ -1000,27 +1031,27 @@
       ctx.stroke();
       if (candle.isLit) {
         const flicker = Math.sin(this.flameFlickerPhase + candle.flickerOffset) * 2;
-        const flameHeight = 26 + flicker;
-        const flameY = -candle.height - 12;
-        const glow = ctx.createRadialGradient(0, flameY - flameHeight / 2, 2, 0, flameY - flameHeight / 2, 40);
+        const flameHeight = 24 + flicker;
+        const flameY = -candle.height - 10;
+        const glow = ctx.createRadialGradient(0, flameY - flameHeight / 2, 2, 0, flameY - flameHeight / 2, 35);
         glow.addColorStop(0, "rgba(255, 215, 0, 0.8)");
         glow.addColorStop(0.5, "rgba(255, 133, 0, 0.3)");
         glow.addColorStop(1, "rgba(255, 133, 0, 0)");
         ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(0, flameY - flameHeight / 2, 40, 0, Math.PI * 2);
+        ctx.arc(0, flameY - flameHeight / 2, 35, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = "#ff9900";
         ctx.beginPath();
         ctx.moveTo(0, flameY);
-        ctx.bezierCurveTo(-10, flameY - 8, -8, flameY - flameHeight, 0, flameY - flameHeight - 6);
-        ctx.bezierCurveTo(8, flameY - flameHeight, 10, flameY - 8, 0, flameY);
+        ctx.bezierCurveTo(-9, flameY - 7, -7, flameY - flameHeight, 0, flameY - flameHeight - 5);
+        ctx.bezierCurveTo(7, flameY - flameHeight, 9, flameY - 7, 0, flameY);
         ctx.fill();
         ctx.fillStyle = "#ffffcc";
         ctx.beginPath();
         ctx.moveTo(0, flameY);
-        ctx.bezierCurveTo(-5, flameY - 5, -4, flameY - flameHeight + 8, 0, flameY - flameHeight + 2);
-        ctx.bezierCurveTo(4, flameY - flameHeight + 8, 5, flameY - 5, 0, flameY);
+        ctx.bezierCurveTo(-4, flameY - 4, -3, flameY - flameHeight + 7, 0, flameY - flameHeight + 2);
+        ctx.bezierCurveTo(3, flameY - flameHeight + 7, 4, flameY - 4, 0, flameY);
         ctx.fill();
       }
       ctx.restore();
@@ -1037,14 +1068,14 @@
       this.ctx = canvas.getContext("2d");
       this.particles = particleSystem;
       this.onComplete = onComplete;
-      this.boxX = canvas.width / 2;
-      this.boxY = canvas.height * 0.58;
-      this.boxSize = Math.min(canvas.width * 0.45, 200);
       this.state = "shaking";
       this.shakeTime = 0;
       this.lidOffsetY = 0;
       this.lidBounceVelocity = 0;
       this.crystalFloatPhase = 0;
+      const width = canvas.logicalWidth || canvas.width;
+      const height = canvas.logicalHeight || canvas.height;
+      this.resize(width, height);
       this.butterflies = [];
       this.initButterflies();
       this.boundClick = this.handleClick.bind(this);
@@ -1052,9 +1083,11 @@
       this.startSequence();
     }
     resize(width, height) {
+      const isSmallPhone = width < 480;
       this.boxX = width / 2;
-      this.boxY = height * 0.58;
+      this.boxY = isSmallPhone ? height * 0.54 : height * 0.58;
       this.boxSize = Math.min(width * 0.45, 200);
+      this.boxSize = Math.max(130, this.boxSize);
     }
     initButterflies() {
       this.butterflies = [];
@@ -1115,6 +1148,8 @@
     updateAndRender() {
       const ctx = this.ctx;
       this.crystalFloatPhase += 0.03;
+      const width = this.canvas.logicalWidth || this.canvas.width;
+      const height = this.canvas.logicalHeight || this.canvas.height;
       ctx.save();
       const darkGrad = ctx.createRadialGradient(
         this.boxX,
@@ -1122,12 +1157,12 @@
         100,
         this.boxX,
         this.boxY,
-        Math.max(this.canvas.width, this.canvas.height) * 0.8
+        Math.max(width, height) * 0.8
       );
       darkGrad.addColorStop(0, "rgba(35, 18, 25, 0.4)");
       darkGrad.addColorStop(1, "rgba(15, 8, 12, 0.85)");
       ctx.fillStyle = darkGrad;
-      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      ctx.fillRect(0, 0, width, height);
       ctx.restore();
       if (this.state === "opened") {
         this.drawGlowingCrystal(ctx);
@@ -1184,7 +1219,7 @@
     drawGlowingCrystal(ctx) {
       const floatY = Math.sin(this.crystalFloatPhase) * 12;
       const cx = this.boxX;
-      const cy = this.boxY - 180 + floatY;
+      const cy = this.boxY - this.boxSize * 0.9 + floatY;
       ctx.save();
       ctx.translate(cx, cy);
       const aura = ctx.createRadialGradient(0, 0, 5, 0, 0, 60);
@@ -1208,11 +1243,12 @@
       ctx.restore();
     }
     updateAndRenderButterflies(ctx) {
+      const width = this.canvas.logicalWidth || this.canvas.width;
       for (let b of this.butterflies) {
         b.x += b.vx;
         b.y += b.vy;
         b.wingAngle += b.wingSpeed;
-        if (b.y < 50 || Math.abs(b.x - this.boxX) > 200) {
+        if (b.y < 50 || Math.abs(b.x - this.boxX) > width * 0.4) {
           b.vy = -b.vy * 0.5;
           b.vx = -b.vx;
         }
@@ -1239,9 +1275,9 @@
       this.canvas = canvas;
       this.ctx = canvas.getContext("2d");
       this.particles = particleSystem;
-      this.centerX = canvas.width / 2;
-      this.groundY = canvas.height;
-      this.canopyCenterY = canvas.height * 0.42;
+      const width = canvas.logicalWidth || canvas.width;
+      const height = canvas.logicalHeight || canvas.height;
+      this.resize(width, height);
       this.startTime = Date.now();
       this.trunkGrowthProgress = 0;
       this.particles.initHeartTreeCanopy(this.centerX, this.canopyCenterY, 480);
@@ -1251,9 +1287,11 @@
       this.canvas.addEventListener("click", this.boundClick);
     }
     resize(width, height) {
+      const isSmallPhone = width < 480;
+      const isLandscapeShort = height < 550;
       this.centerX = width / 2;
       this.groundY = height;
-      this.canopyCenterY = height * 0.42;
+      this.canopyCenterY = isLandscapeShort ? height * 0.45 : isSmallPhone ? height * 0.38 : height * 0.42;
     }
     triggerTypographySequence() {
       const l1 = document.getElementById("typographyLine1");
@@ -1279,23 +1317,25 @@
     updateAndRender() {
       const ctx = this.ctx;
       const elapsedSeconds = (Date.now() - this.startTime) / 1e3;
+      const width = this.canvas.logicalWidth || this.canvas.width;
+      const height = this.canvas.logicalHeight || this.canvas.height;
       ctx.save();
-      const bgGrad = ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
       bgGrad.addColorStop(0, "#1c0f16");
       bgGrad.addColorStop(0.5, "#361824");
       bgGrad.addColorStop(1, "#180a11");
       ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      ctx.fillRect(0, 0, width, height);
       ctx.restore();
       if (this.trunkGrowthProgress < 1) {
         this.trunkGrowthProgress += 0.015;
         if (this.trunkGrowthProgress > 1) this.trunkGrowthProgress = 1;
       }
-      this.drawCurvedTreeTrunk(ctx, this.trunkGrowthProgress);
+      this.drawCurvedTreeTrunk(ctx, this.trunkGrowthProgress, width, height);
       this.particles.updateAndRenderHeartTree(elapsedSeconds);
       this.particles.updateAndRenderHitParticles();
     }
-    drawCurvedTreeTrunk(ctx, progress) {
+    drawCurvedTreeTrunk(ctx, progress, width, height) {
       ctx.save();
       const startX = this.centerX;
       const startY = this.groundY;
@@ -1307,27 +1347,28 @@
       trunkGrad.addColorStop(1, "#1a0b12");
       ctx.strokeStyle = trunkGrad;
       ctx.lineCap = "round";
-      const maxThickness = Math.min(this.canvas.width * 0.06, 42);
+      const maxThickness = Math.max(20, Math.min(width * 0.07, 42));
       ctx.lineWidth = maxThickness;
       ctx.beginPath();
       ctx.moveTo(startX, startY);
-      const cp1x = startX - 35;
+      const cp1x = startX - width * 0.05;
       const cp1y = startY - (startY - endY) * 0.4 * progress;
-      const cp2x = startX + 25;
+      const cp2x = startX + width * 0.03;
       const cp2y = startY - (startY - endY) * 0.7 * progress;
       const currentEndY = startY - (startY - endY) * progress;
       ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, currentEndY);
       ctx.stroke();
       if (progress > 0.5) {
         const branchProgress = (progress - 0.5) * 2;
-        ctx.lineWidth = maxThickness * 0.4;
+        ctx.lineWidth = maxThickness * 0.45;
+        const branchSpread = Math.min(width * 0.18, 110);
         ctx.beginPath();
         ctx.moveTo(endX, currentEndY + 20);
-        ctx.quadraticCurveTo(endX - 70, currentEndY - 30, endX - 110 * branchProgress, currentEndY - 60 * branchProgress);
+        ctx.quadraticCurveTo(endX - branchSpread * 0.6, currentEndY - 30, endX - branchSpread * branchProgress, currentEndY - 60 * branchProgress);
         ctx.stroke();
         ctx.beginPath();
         ctx.moveTo(endX, currentEndY + 30);
-        ctx.quadraticCurveTo(endX + 70, currentEndY - 20, endX + 110 * branchProgress, currentEndY - 50 * branchProgress);
+        ctx.quadraticCurveTo(endX + branchSpread * 0.6, currentEndY - 20, endX + branchSpread * branchProgress, currentEndY - 50 * branchProgress);
         ctx.stroke();
       }
       ctx.restore();
@@ -1353,19 +1394,33 @@
       this.runLoop = this.loop.bind(this);
       requestAnimationFrame(this.runLoop);
       window.addEventListener("resize", () => this.handleResize());
+      window.addEventListener("orientationchange", () => {
+        setTimeout(() => this.handleResize(), 150);
+      });
     }
     initCanvasSize() {
-      this.canvas.width = window.innerWidth;
-      this.canvas.height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      const displayWidth = window.innerWidth;
+      const displayHeight = window.innerHeight;
+      this.dpr = dpr;
+      this.displayWidth = displayWidth;
+      this.displayHeight = displayHeight;
+      this.canvas.width = Math.round(displayWidth * dpr);
+      this.canvas.height = Math.round(displayHeight * dpr);
+      this.canvas.style.width = `${displayWidth}px`;
+      this.canvas.style.height = `${displayHeight}px`;
+      this.canvas.logicalWidth = displayWidth;
+      this.canvas.logicalHeight = displayHeight;
+      this.ctx.resetTransform();
+      this.ctx.scale(dpr, dpr);
     }
     handleResize() {
       this.initCanvasSize();
       if (this.particleSystem) {
-        this.particleSystem.initPetals(35);
-        this.particleSystem.initSparkles(45);
+        this.particleSystem.resize(this.displayWidth, this.displayHeight);
       }
       if (this.currentSceneInstance && this.currentSceneInstance.resize) {
-        this.currentSceneInstance.resize(this.canvas.width, this.canvas.height);
+        this.currentSceneInstance.resize(this.displayWidth, this.displayHeight);
       }
     }
     initParticleSystem() {
@@ -1455,7 +1510,7 @@
       }
     }
     loop() {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.clearRect(0, 0, this.displayWidth, this.displayHeight);
       if (this.currentSceneIndex === 1 || this.currentSceneIndex === 2) {
         this.particleSystem.updateAndRenderBackground();
       }
