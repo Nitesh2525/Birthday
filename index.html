@@ -1,130 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-    <title>A Special Surprise For You ✨ | Happy Birthday</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body>
-    <!-- App Container -->
-    <div id="app">
-      <!-- Fullscreen Canvas for Scenes & Physics -->
-      <canvas id="mainCanvas"></canvas>
 
-      <!-- Global Audio & Navigation Header -->
-      <header class="top-nav">
-        <div class="nav-brand">✨ Birthday Special</div>
-        <div class="nav-controls">
-          <button id="micToggleBtn" class="icon-btn" title="Microphone Status">
-            <span class="btn-icon" id="micIcon">🎙️</span>
-            <span class="btn-label" id="micStatusText">Mic Ready</span>
-          </button>
-          <button id="musicToggleBtn" class="icon-btn" title="Toggle Sound">
-            <span class="btn-icon" id="musicIcon">🎵</span>
-            <span class="btn-label" id="musicStatusText">Music On</span>
-          </button>
-          <button id="restartBtn" class="icon-btn" title="Restart Experience">
-            <span class="btn-icon">🔄</span>
-          </button>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <title>A Special Surprise For You ✨ | Happy Birthday</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <!-- App Container -->
+  <div id="app">
+    <!-- Fullscreen Canvas for Scenes & Physics -->
+    <canvas id="mainCanvas"></canvas>
+
+    <!-- Global Audio & Navigation Header -->
+    <header class="top-nav">
+      <div class="nav-brand">✨ Birthday Special</div>
+      <div class="nav-controls">
+        <button id="micToggleBtn" class="icon-btn" title="Microphone Status">
+          <span class="btn-icon" id="micIcon">🎙️</span>
+          <span class="btn-label" id="micStatusText">Mic Ready</span>
+        </button>
+        <button id="musicToggleBtn" class="icon-btn" title="Toggle Sound">
+          <span class="btn-icon" id="musicIcon">🎵</span>
+          <span class="btn-label" id="musicStatusText">Music On</span>
+        </button>
+        <button id="restartBtn" class="icon-btn" title="Restart Experience">
+          <span class="btn-icon">🔄</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Scene Overlays Container -->
+    <div id="uiOverlay">
+
+      <!-- SCENE 1 UI -->
+      <section id="scene1UI" class="scene-overlay active">
+        <div class="scene-header">
+          <h1 class="scene-title fade-in-up">A little something, for you</h1>
+          <p class="scene-subtitle fade-in-up delay-1">Pull the bowstring back and aim for the glowing heart</p>
         </div>
-      </header>
 
-      <!-- Scene Overlays Container -->
-      <div id="uiOverlay">
-        
-        <!-- SCENE 1 UI -->
-        <section id="scene1UI" class="scene-overlay active">
-          <div class="scene-header">
-            <h1 class="scene-title fade-in-up">A little something, for you</h1>
-            <p class="scene-subtitle fade-in-up delay-1">Pull the bowstring back and aim for the glowing heart</p>
-          </div>
+        <!-- Drag instruction tooltip near bow -->
+        <div id="bowInstruction" class="instruction-pill pulse-glow">
+          <span class="hand-icon">🏹</span>
+          <span>Pull & Release</span>
+        </div>
+      </section>
 
-          <!-- Drag instruction tooltip near bow -->
-          <div id="bowInstruction" class="instruction-pill pulse-glow">
-            <span class="hand-icon">🏹</span>
-            <span>Pull & Release</span>
-          </div>
-        </section>
+      <!-- SCENE 2 UI -->
+      <section id="scene2UI" class="scene-overlay">
+        <div class="scene-header">
+          <h1 class="scene-title fade-in-up">Make a wish…</h1>
+          <p class="scene-subtitle fade-in-up delay-1">Blow out all 5 candles ✨</p>
+        </div>
 
-        <!-- SCENE 2 UI -->
-        <section id="scene2UI" class="scene-overlay">
-          <div class="scene-header">
-            <h1 class="scene-title fade-in-up">Make a wish…</h1>
-            <p class="scene-subtitle fade-in-up delay-1">Blow out all 5 candles ✨</p>
-          </div>
+        <!-- Candle Counter Badge -->
+        <div class="candle-counter-badge">
+          <span class="flame-icon">🔥</span>
+          <span id="candleCountText">5 / 5 Candles Glowing</span>
+        </div>
 
-          <!-- Candle Counter Badge -->
-          <div class="candle-counter-badge">
-            <span class="flame-icon">🔥</span>
-            <span id="candleCountText">5 / 5 Candles Glowing</span>
-          </div>
+        <!-- Fallback Blow Button (If mic permission denied or user prefers tapping) -->
+        <div id="blowFallbackContainer" class="fallback-container">
+          <button id="blowFallbackBtn" class="primary-btn glow-btn pulse-action">
+            <span>🌬️ Tap to Blow Candle</span>
+          </button>
+          <p class="mic-hint-text" id="micHintText">Microphone listening for soft blow sounds…</p>
+        </div>
+      </section>
 
-          <!-- Fallback Blow Button (If mic permission denied or user prefers tapping) -->
-          <div id="blowFallbackContainer" class="fallback-container">
-            <button id="blowFallbackBtn" class="primary-btn glow-btn pulse-action">
-              <span>🌬️ Tap to Blow Candle</span>
-            </button>
-            <p class="mic-hint-text" id="micHintText">Microphone listening for soft blow sounds…</p>
-          </div>
-        </section>
+      <!-- SCENE 3 UI -->
+      <section id="scene3UI" class="scene-overlay">
+        <div class="scene-header">
+          <h1 class="scene-title text-glow-pink">A Surprise Awaits</h1>
+          <p id="giftSubtitle" class="scene-subtitle">Watch the luxury gift box open…</p>
+        </div>
 
-        <!-- SCENE 3 UI -->
-        <section id="scene3UI" class="scene-overlay">
-          <div class="scene-header">
-            <h1 class="scene-title text-glow-pink">A Surprise Awaits</h1>
-            <p id="giftSubtitle" class="scene-subtitle">Watch the luxury gift box open…</p>
-          </div>
+        <!-- Interactive Gift Prompt -->
+        <div id="giftClickPrompt" class="instruction-pill pulse-glow" style="display: none;">
+          <span>🎁 Tap Gift Box to Open</span>
+        </div>
 
-          <!-- Interactive Gift Prompt -->
-          <div id="giftClickPrompt" class="instruction-pill pulse-glow" style="display: none;">
-            <span>🎁 Tap Gift Box to Open</span>
-          </div>
-
-          <!-- Love Letter Modal Container -->
-          <div id="loveLetterModal" class="letter-modal">
-            <div class="letter-card parchment-bg">
-              <button id="closeLetterBtn" class="close-card-btn">&times;</button>
-              <div class="letter-seal">💖</div>
-              <h2 class="letter-title">For You</h2>
-              <div class="letter-body">
-                <p>This surprise was made only for you ✨</p>
-                <p class="letter-text">
-                  May your day be filled with warm smiles, sweet moments, endless love, and magic. You bring so much light into the world!
-                </p>
-              </div>
-              <div class="letter-footer">
-                <span class="letter-signature">With all my love ❤️</span>
-                <button id="proceedToTreeBtn" class="primary-btn glow-btn">
-                  <span>See Your Heart Tree 🌳✨</span>
-                </button>
-              </div>
+        <!-- Love Letter Modal Container -->
+        <div id="loveLetterModal" class="letter-modal">
+          <div class="letter-card parchment-bg">
+            <button id="closeLetterBtn" class="close-card-btn">&times;</button>
+            <div class="letter-seal">💖</div>
+            <h2 class="letter-title">For You</h2>
+            <div class="letter-body">
+              <p>This surprise was made only for you ✨</p>
+              <p class="letter-text">
+                May your day be filled with warm smiles, sweet moments, endless love, and magic. You bring so much light
+                into the world!
+              </p>
+            </div>
+            <div class="letter-footer">
+              <span class="letter-signature">With all my love ❤️</span>
+              <button id="proceedToTreeBtn" class="primary-btn glow-btn">
+                <span>See Your Heart Tree 🌳✨</span>
+              </button>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- SCENE 4 UI -->
-        <section id="scene4UI" class="scene-overlay">
-          <div class="tree-typography-container">
-            <h3 id="typographyLine1" class="typo-line typo-small">make it count</h3>
-            <h1 id="typographyLine2" class="typo-line typo-main">Happy Birthday</h1>
-            <p id="typographyLine3" class="typo-line typo-sub">Today isn’t just your birthdayit’s the day the love of my life was born ❤️<br> Thank you for making ordinary days feel magical and difficult days feel easier just by being there<br> My biggest wish is that you always feel loved valued and appreciated because that’s exactly what you are <br>Happy Birthday my beautiful girl my laado ❣️<br>❣️I love you more than words will ever explain</p>
-          </div>
+      <!-- SCENE 4 UI -->
+      <section id="scene4UI" class="scene-overlay">
+        <div class="tree-typography-container">
+          <h3 id="typographyLine1" class="typo-line typo-small">Make it Count</h3>
+          <h1 id="typographyLine2" class="typo-line typo-main">Happy Birthday</h1>
+          <p id="typographyLine3" class="typo-line typo-sub">Today isn’t just your birthdayit’s the day the love of my
+            life was born ❤️<br> Thank you for making ordinary days feel magical and difficult days feel easier just by
+            being there<br> My biggest wish is that you always feel loved valued and appreciated because that’s exactly
+            what you are <br>Happy Birthday my beautiful girl my laado ❣️<br>❣️I love you more than words will ever
+            explain</p>
+        </div>
 
-          <div class="scene4-actions">
-            <button id="replayAllBtn" class="primary-btn glass-btn">
-              <span>🔄 Replay Birthday Story</span>
-            </button>
-          </div>
-        </section>
+        <div class="scene4-actions">
+          <button id="replayAllBtn" class="primary-btn glass-btn">
+            <span>🔄 Replay Birthday Story</span>
+          </button>
+        </div>
+      </section>
 
-      </div>
     </div>
+  </div>
 
-    <script src="./bundle.js"></script>
-  </body>
+  <script src="./bundle.js"></script>
+</body>
+
 </html>
